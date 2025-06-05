@@ -1,24 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/user.entity';
+import { Repository } from 'typeorm';
 import { CreateUserType } from 'utils/types/types';
-
+import { hash } from 'bcrypt';
 @Injectable()
 export class UsersService {
-    private fakeUsers = [
-        {id: 0, username: "em", email: "g@gmail.com"},
-        {id: 1, username: "em", email: "g@gmail.com"},
-        {id: 2, username: "em", email: "g@gmail.com"}
-    ]
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
-    fetchUsers() {
-        return this.fakeUsers
-    }
+  async createUser(username: string, email: string, password: string): Promise<User> {
+     const hashedPassword = await hash(password, 10);
+    const user = this.userRepository.create({ username, email, password: hashedPassword });
+    return this.userRepository.save(user);
+  }
 
-    createUser(userDetails: CreateUserType) {
-        this.fakeUsers.push(userDetails)
-        return;
-    }
+   async fetchUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
 
-    fetchUserById(id: number){
-        return this.fakeUsers.filter(user => user.id === id)
-    }
+  //for authentication
+  async findByEmail(email: string):Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { email, },
+    });
+  }
+
 }
