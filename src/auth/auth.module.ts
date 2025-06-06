@@ -5,8 +5,13 @@ import { UsersService } from 'src/users/services/users/users.service';
 import { LocalStrategy } from './strategy/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { sign } from 'crypto';
+import jwtConfig from './config/jwt.config';
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User]),
+  JwtModule.registerAsync(jwtConfig.asProvider())
+],
   controllers: [AuthController],
   providers: [AuthService, UsersService, LocalStrategy],
 })
